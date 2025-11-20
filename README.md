@@ -98,25 +98,6 @@ A safe, anonymous forum-style web application where users can share their though
    heroku config:set MONGODB_URI=your_mongodb_atlas_uri
    ```
 
-4. Deploy:
-   ```bash
-   git push heroku main
-   ```
-
-### Deploy to Railway
-
-1. Go to [Railway.app](https://railway.app)
-2. Click "New Project" → "Deploy from GitHub"
-3. Select your repository
-4. Add environment variable `MONGODB_URI`
-5. Deploy automatically
-
-### Deploy to Vercel
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Run: `vercel`
-3. Add environment variable in Vercel dashboard
-4. Redeploy
 
 ## API Endpoints
 
