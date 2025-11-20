@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safe Venting Space - Share Your Thoughts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .emoji-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .emoji-btn {
+            font-size: 1.5rem;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .emoji-btn:hover {
+            background: #e0e0e0;
+            transform: scale(1.1);
+        }
+
+        .emoji-btn.selected {
+            border-color: #667eea;
+            background: #e8eaf6;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .char-count.warning {
+            color: #ff6b6b;
+        }
+
+        .feed-container {
+            animation: fadeIn 1s ease-in;
+        }
+
+        .feed-header {
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .message-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            animation: slideIn 0.4s ease-out;
+            transition: transform 0.2s;
+        }
+
+        .message-card:hover {
+            transform: translateX(5px);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .message-emoji {
+            font-size: 1.5rem;
+        }
+
+        .message-time {
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .message-text {
+            line-height: 1.6;
+            color: #444;
+            word-wrap: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideInRight 0.4s ease-out;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .notification.success {
+            border-left: 4px solid #4caf50;
+        }
+
+        .notification.error {
+            border-left: 4px solid #f44336;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                top: 10px;
+            }
+        }
+
+        /* Accessibility improvements */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        *:focus-visible {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌙 Safe Venting Space</h1>
+            <p class="subtitle">A judgment-free zone to share your thoughts and feelings</p>
+        </header>
+
+        <div class="form-container">
+            <div class="warning-message">
+                💙 This is a safe space. Please be kind and respectful. Harmful or abusive content will be filtered.
+            </div>
+
+            <form id="ventForm" aria-label="Share your thoughts form">
+                <div class="form-group">
+                    <label for="messageText">What's on your mind?</label>
+                    <textarea 
+                        id="messageText" 
+                        name="message" 
+                        placeholder="Share your thoughts, feelings, or anything you need to express..."
+                        maxlength="1000"
+                        required
+                        aria-describedby="charCount"
+                    ></textarea>
+                    <div id="charCount" class="char-count">0 / 1000</div>
+                </div>
+
+                <div class="form-group">
+                    <label>How are you feeling? (Optional)</label>
+                    <div class="emoji-picker" role="group" aria-label="Select an emoji">
+                        <button type="button" class="emoji-btn" data-emoji="😊" aria-label="Happy">😊</button>
+                        <button type="button" class="emoji-btn" data-emoji="😢" aria-label="Sad">😢</button>
+                        <button type="button" class="emoji-btn" data-emoji="😤" aria-label="Frustrated">😤</button>
+                        <button type="button" class="emoji-btn" data-emoji="😰" aria-label="Anxious">😰</button>
+                        <button type="button" class="emoji-btn" data-emoji="😔" aria-label="Disappointed">😔</button>
+                        <button type="button" class="emoji-btn" data-emoji="🤗" aria-label="Hopeful">🤗</button>
+                        <button type="button" class="emoji-btn" data-emoji="😌" aria-label="Relieved">😌</button>
+                        <button type="button" class="emoji-btn" data-emoji="💭" aria-label="Thoughtful">💭</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Share Anonymously</button>
+            </form>
+        </div>
+
+        <div class="feed-container">
+            <h2 class="feed-header">Community Thoughts</h2>
+            <div id="messageFeed" role="feed" aria-label="Anonymous messages feed">
+                <div class="empty-state">
+                    No messages yet. Be the first to share your thoughts.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification" role="alert" aria-live="polite"></div>
+
+    <script>
+        // Content moderation - comprehensive harmful content detection
+        const harmfulPatterns = [
+            // Self-harm and suicide related
+            /\b(kill|suicide|harm|hurt|cut|end)\s+(myself|yourself|themselves|my\s*self|your\s*self)\b/i,
+            /\b(want|going|gonna)\s+to\s+(die|kill|end)\b/i,
+            /\b(suicidal|self[\s-]harm)\b/i,
+            
+            // Abusive language
+            /\b(f+u+c+k+|sh+i+t+|b+i+t+c+h+|a+s+s+h+o+l+e+|c+u+n+t+|d+a+m+n+|h+e+l+l+)\b/gi,
+            /\b(stupid|idiot|dumb|moron|retard)\s+(you|people|everyone|person)\b/i,
+            /\b(hate|despise|loathe)\s+(you|everyone|people|all)\b/i,
+            
+            // Threats and violence
+            /\b(kill|murder|hurt|attack|beat)\s+(you|them|someone|people)\b/i,
+            /\b(death|violence)\s+(threat|wish)\b/i,
+            /\b(shoot|stab|punch|hit)\s+(you|them|someone)\b/i,
+            
+            // Discriminatory language
+            /\b(racist|sexist|homophobic|transphobic)\b/i,
+            /\b(n+i+g+g+|f+a+g+g+|tr+a+n+n+y+)\b/gi,
+            
+            // Spam patterns
+            /(.)\1{10,}/i, // Repeated characters
+            /\b(buy|click|visit|check)\s+(now|here|this)\b/gi,
+            /(https?:\/\/|www\.)/gi, // URLs
+            /\b[\w\.-]+@[\w\.-]+\.\w+\b/gi, // Email addresses
+            
+            // Excessive caps (more than 70% uppercase)
+            /^[^a-z]*[A-Z][^a-z]*[A-Z][^a-z]*[A-Z][^a-z]*[A-Z][^a-z]*[A-Z][^a-z]*$/
+        ];
+
+        const supportiveResources = `
+If you're experiencing thoughts of self-harm, please reach out:
+• National Suicide Prevention Lifeline: 988
+• Crisis Text Line: Text HOME to 741741
+• International Association for Suicide Prevention: https://www.iasp.info/resources/Crisis_Centres/
+        `;
+
+        // State management
+        let messages = [];
+        let selectedEmoji = null;
+
+        // DOM elements
+        const form = document.getElementById('ventForm');
+        const messageText = document.getElementById('messageText');
+        const charCount = document.getElementById('charCount');
+        const messageFeed = document.getElementById('messageFeed');
+        const notification = document.getElementById('notification');
+        const emojiButtons = document.querySelectorAll('.emoji-btn');
+
+        // Load messages from localStorage
+        function loadMessages() {
+            try {
+                const stored = localStorage.getItem('ventMessages');
+                if (stored) {
+                    messages = JSON.parse(stored);
+                    // Validate loaded messages
+                    messages = messages.filter(msg => 
+                        msg && 
+                        typeof msg.text === 'string' && 
+                        typeof msg.timestamp === 'number' &&
+                        msg.text.length > 0
+                    );
+                    renderMessages();
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                messages = [];
+                localStorage.removeItem('ventMessages');
+            }
+        }
+
+        // Save messages to localStorage
+        function saveMessages() {
+            try {
+                // Keep only last 100 messages to prevent storage overflow
+                if (messages.length > 100) {
+                    messages = messages.slice(-100);
+                }
+                localStorage.setItem('ventMessages', JSON.stringify(messages));
+            } catch (error) {
+                console.error('Error saving messages:', error);
+                showNotification('Unable to save message. Storage may be full.', 'error');
+            }
+        }
+
+        // Character counter
+        messageText.addEventListener('input', () => {
+            const length = messageText.value.length;
+            charCount.textContent = `${length} / 1000`;
+            
+            if (length > 900) {
+                charCount.classList.add('warning');
+            } else {
+                charCount.classList.remove('warning');
+            }
+        });
+
+        // Emoji selection
+        emojiButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                emojiButtons.forEach(b => b.classList.remove('selected'));
+                
+                if (selectedEmoji === btn.dataset.emoji) {
+                    selectedEmoji = null;
+                } else {
+                    btn.classList.add('selected');
+                    selectedEmoji = btn.dataset.emoji;
+                }
+            });
+        });
+
+        // Content moderation check
+        function moderateContent(text) {
+            // Check if message is too short
+            if (text.length < 3) {
+                return {
+                    safe: false,
+                    message: 'Please write a more meaningful message (at least 3 characters).'
+                };
+            }
+
+            // Check for harmful patterns
+            for (let i = 0; i < harmfulPatterns.length; i++) {
+                const pattern = harmfulPatterns[i];
+                if (pattern.test(text)) {
+                    // Different messages for different types of violations
+                    if (i < 3) {
+                        // Self-harm related
+                        return {
+                            safe: false,
+                            message: 'We detected content related to self-harm. ' + supportiveResources
+                        };
+                    } else if (i < 9) {
+                        // Abusive or threatening
+                        return {
+                            safe: false,
+                            message: 'Your message contains inappropriate or abusive language. Please be respectful.'
+                        };
+                    } else if (i < 11) {
+                        // Discriminatory
+                        return {
+                            safe: false,
+                            message: 'Your message contains discriminatory language. This is a safe space for everyone.'
+                        };
+                    } else {
+                        // Spam
+                        return {
+                            safe: false,
+                            message: 'Your message appears to be spam or contains prohibited content (links, emails, etc.).'
+                        };
+                    }
+                }
+            }
+
+            // Check for excessive caps (more than 70% uppercase letters)
+            const letters = text.replace(/[^a-zA-Z]/g, '');
+            if (letters.length > 10) {
+                const upperCount = text.replace(/[^A-Z]/g, '').length;
+                const capsRatio = upperCount / letters.length;
+                if (capsRatio > 0.7) {
+                    return {
+                        safe: false,
+                        message: 'Please avoid excessive use of capital letters.'
+                    };
+                }
+            }
+
+            return { safe: true };
+        }
+
+        // Show notification
+        function showNotification(message, type = 'success') {
+            // Clear any existing timeout
+            if (window.notificationTimeout) {
+                clearTimeout(window.notificationTimeout);
+            }
+            
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            window.notificationTimeout = setTimeout(() => {
+                notification.classList.remove('show');
+            }, type === 'error' ? 6000 : 4000); // Longer display for errors
+        }
+
+        // Format timestamp
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        // Render messages
+        function renderMessages() {
+            if (messages.length === 0) {
+                messageFeed.innerHTML = '<div class="empty-state">No messages yet. Be the first to share your thoughts.</div>';
+                return;
+            }
+
+            // Validate and sanitize emoji
+            const validEmojis = ['😊', '😢', '😤', '😰', '😔', '🤗', '😌', '💭'];
+            
+            messageFeed.innerHTML = messages
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .map(msg => {
+                    const safeEmoji = validEmojis.includes(msg.emoji) ? msg.emoji : '💭';
+                    const safeText = escapeHtml(msg.text);
+                    const safeTimestamp = typeof msg.timestamp === 'number' ? msg.timestamp : Date.now();
+                    
+                    return `
+                        <article class="message-card">
+                            <div class="message-header">
+                                <span class="message-emoji" aria-label="Feeling emoji">${safeEmoji}</span>
+                                <time class="message-time" datetime="${new Date(safeTimestamp).toISOString()}">
+                                    ${formatTime(safeTimestamp)}
+                                </time>
+                            </div>
+                            <p class="message-text">${safeText}</p>
+                        </article>
+                    `;
+                }).join('');
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#x27;',
+                '/': '&#x2F;'
+            };
+            return text.replace(/[&<>"'/]/g, (char) => map[char]);
+        }
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const text = messageText.value.trim();
+            
+            if (!text) {
+                showNotification('Please write something before sharing.', 'error');
+                messageText.focus();
+                return;
+            }
+
+            // Moderate content
+            const moderation = moderateContent(text);
+            if (!moderation.safe) {
+                showNotification(moderation.message, 'error');
+                messageText.focus();
+                return;
+            }
+
+            // Prevent duplicate submissions (rate limiting)
+            const lastSubmission = localStorage.getItem('lastSubmissionTime');
+            const now = Date.now();
+            if (lastSubmission && (now - parseInt(lastSubmission)) < 5000) {
+                showNotification('Please wait a few seconds before submitting again.', 'error');
+                return;
+            }
+
+            // Create new message
+            const newMessage = {
+                id: now + Math.random(), // More unique ID
+                text: text,
+                emoji: selectedEmoji || '💭',
+                timestamp: now
+            };
+
+            messages.push(newMessage);
+            saveMessages();
+            localStorage.setItem('lastSubmissionTime', now.toString());
+            renderMessages();
+
+            // Reset form
+            messageText.value = '';
+            charCount.textContent = '0 / 1000';
+            charCount.classList.remove('warning');
+            selectedEmoji = null;
+            emojiButtons.forEach(b => b.classList.remove('selected'));
+
+            showNotification('Your thoughts have been shared anonymously. Thank you for opening up. 💙');
+            
+            // Scroll to top of feed smoothly
+            setTimeout(() => {
+                messageFeed.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        });
+
+        // Update timestamps periodically
+        setInterval(() => {
+            if (messages.length > 0) {
+                renderMessages();
+            }
+        }, 60000); // Update every minute
+
+        // Prevent form resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+
+        // Initialize
+        loadMessages();
+
+        // Add keyboard shortcut (Ctrl/Cmd + Enter to submit)
+        messageText.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                form.dispatchEvent(new Event('submit'));
+            }
+        });
+    </script>
+</body>
+</html>
