@@ -1,9 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -161,13 +171,21 @@ app.post('/api/messages', async (req, res) => {
       }
       
       rateLimitMap.set(clientIp, Date.now());
-      
-      return res.status(201).json({
+
+      const responseData = {
         _id: newMessage._id,
         text: newMessage.text,
         emoji: newMessage.emoji,
         timestamp: newMessage.timestamp
-      });
+      };
+
+      // Broadcast to all connected clients
+      const broadcast = req.app.get('broadcastNewMessage');
+      if (broadcast) {
+        broadcast(responseData);
+      }
+      
+      return res.status(201).json(responseData);
     }
 
     // Create and save message to MongoDB
@@ -188,12 +206,20 @@ app.post('/api/messages', async (req, res) => {
       }
     }
 
-    res.status(201).json({
+    const responseData = {
       _id: message._id,
       text: message.text,
       emoji: message.emoji,
       timestamp: message.timestamp
-    });
+    };
+
+    // Broadcast to all connected clients
+    const broadcast = req.app.get('broadcastNewMessage');
+    if (broadcast) {
+      broadcast(responseData);
+    }
+
+    res.status(201).json(responseData);
   } catch (error) {
     console.error('Error saving message:', error);
     if (error.name === 'ValidationError') {
@@ -209,6 +235,24 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
 });
 
-app.listen(PORT, () => {
+// WebSocket connection for real-time updates
+io.on('connection', (socket) => {
+  console.log('👤 User connected:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('👋 User disconnected:', socket.id);
+  });
+});
+
+// Broadcast new message to all connected clients
+function broadcastNewMessage(message) {
+  io.emit('newMessage', message);
+}
+
+// Export for use in routes
+app.set('broadcastNewMessage', broadcastNewMessage);
+
+server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log('⚡ WebSocket enabled for real-time updates');
 });
